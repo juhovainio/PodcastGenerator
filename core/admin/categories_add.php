@@ -29,11 +29,18 @@ $isduplicated = NULL;
 $n = 0; // counter
 
 $add = $_POST['addcategory']; // variable
+$desc = $_POST['catdesc'];
 
 // Depurate input
-$add = stripslashes($add);
-$add = htmlspecialchars($add);
-$add = depurateContent($add);
+function cleanup($content){
+	$content = stripslashes($content);
+	$content = htmlspecialchars($content);
+	$content = depurateContent($content);
+	return $content;
+}
+
+$add = cleanup($add);
+$desc = cleanup($desc);
 
 if ($add != NULL and $add != "all") { /// 000
 
@@ -58,11 +65,14 @@ if ($add != NULL and $add != "all") { /// 000
 			// echo $singlecategory->description[0]->tagData;
 			// echo "<br><br>";
 
-			if ($id != $singlecategory->id[0] AND $add !=$singlecategory->description[0]) { // if the id of the new category is different from the ids already present in the XML file and if the description is different (e.g. the description is compared cause the id is generated with random characters in case of conversion from japanese, corean etc...
+			if ($id != $singlecategory->id[0] AND $add !=$singlecategory->name[0]) { // if the id of the new category is different from the ids already present in the XML file and if the description is different (e.g. the description is compared cause the id is generated with random characters in case of conversion from japanese, corean etc...
 
 			// put into the array 
-			$arrdesc[] .= htmlspecialchars($singlecategory->description[0]); // Encode special characters
-				$arrid[] .= $singlecategory->id[0];
+				$arrdesc[$n] = array(
+					'name' => htmlspecialchars($singlecategory->name[0]),
+					'desc' => htmlspecialchars($singlecategory->description[0])
+				); // Encode special characters
+				$arrid[$n] = $singlecategory->id[0];
 
 			}
 			else { // if ID already present in XML
@@ -78,9 +88,12 @@ if ($add != NULL and $add != "all") { /// 000
 
 
 	if ($isduplicated != TRUE) { // 001 if new category doesn't exist yet
-	$arrdesc[] .= $add; //Description
+	$arrdesc[$id] = array(
+		'name' => $add, // Name
+		'desc' => $desc //Description
+	);
 
-	$arrid[] .= $id; // create Id
+	$arrid[$id] = $id; // create Id
 
 	//echo "<br>tot elementi $n<BR>";
 
@@ -93,18 +106,17 @@ if ($add != NULL and $add != "all") { /// 000
 		// echo "cat[" . $key . "] = " . $val . "<br>";
 		// echo $key."<br>";
 
-
-
 		$xmlfiletocreate .= '
 			<category>
-			<id>'.$arrid[$key].'</id>
-			<description>'.$val.'</description>
+				<id>'.$arrid[$key].'</id>
+				<name>'.$val['name'].'</name>
+				<description>'.$val['desc'].'</description>
 			</category>';
 	}
 
 
 	$xmlfiletocreate .= '
-		</PodcastGenerator>';
+	</PodcastGenerator>';
 
 	/////////////////////
 	// WRITE THE XML FILE
@@ -114,7 +126,7 @@ if ($add != NULL and $add != "all") { /// 000
 
 	fclose($fp);
 
-	$PG_mainbody .= '<p>'._("New category:").' <i>'.$val.'</i></p>';
+	$PG_mainbody .= '<p>'._("New category:").' <i>'.$val['name'].'</i></p>';
 
 	$PG_mainbody .= '<p><b>'._("Category added!").'</b></p><p><a href="?p=admin&do=categories">'._("Back to category management").'</a>';
 

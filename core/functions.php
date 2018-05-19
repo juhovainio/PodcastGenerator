@@ -779,7 +779,7 @@ function readPodcastCategories ($absoluteurl) {
 
 			//create array containing category id as seed and description for each id
 			$catID = $singlecategory->id[0];
-			$catDescription = $singlecategory->description[0];
+			$catDescription = $singlecategory->name[0];
 			$existingCategories["$catID"] = depurateContent($catDescription);
 				
 			$n++;
